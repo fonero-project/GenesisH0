@@ -29,8 +29,8 @@ def get_args():
                    type="string", help="the pszTimestamp found in the coinbase of the genesisblock")
   parser.add_option("-n", "--nonce", dest="nonce", default=0,
                    type="int", help="the first value of the nonce that will be incremented when searching the genesis hash")
-  parser.add_option("-a", "--algorithm", dest="algorithm", default="SHA256",
-                    help="the PoW algorithm: [SHA256|scrypt|X11|X13|X15]")
+  parser.add_option("-a", "--algorithm", dest="algorithm", default="sha256",
+                    help="the PoW algorithm: [sha256|scrypt|x11|x13|x15|phi1612]")
   parser.add_option("-p", "--pubkey", dest="pubkey", default="04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f",
                    type="string", help="the pubkey found in the output script")
   parser.add_option("-v", "--value", dest="value", default=5000000000,
@@ -40,16 +40,16 @@ def get_args():
 
   (options, args) = parser.parse_args()
   if not options.bits:
-    if options.algorithm == "scrypt" or options.algorithm == "X11" or options.algorithm == "X13" or options.algorithm == "X15":
+    if options.algorithm == "scrypt" or options.algorithm == "x11" or options.algorithm == "x13" or options.algorithm == "x15":
       options.bits = 0x1e0ffff0
     elif options.algorithm == "phi1612":
-      options.bits = 0x207fffff
+      options.bits = 0x1e0ffff0
     else:
       options.bits = 0x1d00ffff
   return options
 
 def get_algorithm(options):
-  supported_algorithms = ["SHA256", "scrypt", "X11", "X13", "X15", "PHI1612"]
+  supported_algorithms = ["sha256", "scrypt", "x11", "x13", "x15", "phi1612"]
   if options.algorithm in supported_algorithms:
     return options.algorithm
   else:
@@ -134,7 +134,7 @@ def generate_hash(data_block, algorithm, start_nonce, bits):
     sha256_hash, header_hash = generate_hashes_from_block(data_block, algorithm)
     last_updated             = calculate_hashrate(nonce, last_updated)
     if is_genesis_hash(header_hash, target):
-      if algorithm == "X11" or algorithm == "X13" or algorithm == "X15" or algorithm == "PHI1612":
+      if algorithm == "x11" or algorithm == "x13" or algorithm == "x15" or algorithm == "phi1612":
         return (header_hash, nonce)
       return (sha256_hash, nonce)
     else:
@@ -147,31 +147,31 @@ def generate_hashes_from_block(data_block, algorithm):
   header_hash = ""
   if algorithm == 'scrypt':
     header_hash = scrypt.hash(data_block,data_block,1024,1,1,32)[::-1] 
-  elif algorithm == 'SHA256':
+  elif algorithm == 'sha256':
     header_hash = sha256_hash
-  elif algorithm == 'PHI1612':
+  elif algorithm == 'phi1612':
     try:
       exec('import %s' % "phi1612_hash")
     except ImportError:
       sys.exit("Cannot run PHI1612 algorithm: module phi1612_hash not found")
     header_hash = phi1612_hash.getPoWHash(data_block)[::-1]
-  elif algorithm == 'X11':
+  elif algorithm == 'x11':
     try:
       exec('import %s' % "xcoin_hash")
     except ImportError:
-      sys.exit("Cannot run X11 algorithm: module xcoin_hash not found")
+      sys.exit("Cannot run x11 algorithm: module xcoin_hash not found")
     header_hash = xcoin_hash.getPoWHash(data_block)[::-1]
-  elif algorithm == 'X13':
+  elif algorithm == 'x13':
     try:
       exec('import %s' % "x13_hash")
     except ImportError:
-      sys.exit("Cannot run X13 algorithm: module x13_hash not found")
+      sys.exit("Cannot run x13 algorithm: module x13_hash not found")
     header_hash = x13_hash.getPoWHash(data_block)[::-1]
-  elif algorithm == 'X15':
+  elif algorithm == 'x15':
     try:
       exec('import %s' % "x15_hash")
     except ImportError:
-      sys.exit("Cannot run X15 algorithm: module x15_hash not found")
+      sys.exit("Cannot run x15 algorithm: module x15_hash not found")
     header_hash = x15_hash.getPoWHash(data_block)[::-1]
   return sha256_hash, header_hash
 
