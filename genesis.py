@@ -42,7 +42,7 @@ def get_args():
   if not options.bits:
     if options.algorithm == "scrypt" or options.algorithm == "X11" or options.algorithm == "X13" or options.algorithm == "X15":
       options.bits = 0x1e0ffff0
-    else if options.algorithm == "phi1612"
+    elif options.algorithm == "phi1612":
       options.bits = 0x207fffff
     else:
       options.bits = 0x1d00ffff
@@ -151,10 +151,10 @@ def generate_hashes_from_block(data_block, algorithm):
     header_hash = sha256_hash
   elif algorithm == 'PHI1612':
     try:
-      exec('import %s' % "phi1612_hash_module")
+      exec('import %s' % "phi1612_hash")
     except ImportError:
-      sys.exit("Cannot run PHI1612 algorithm: module phi1612_hash_module not found")
-    header_hash = phi1612_hash_module.getPoWHash(data_block)[::-1]
+      sys.exit("Cannot run PHI1612 algorithm: module phi1612_hash not found")
+    header_hash = phi1612_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'X11':
     try:
       exec('import %s' % "xcoin_hash")
